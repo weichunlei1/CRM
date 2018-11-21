@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 0.注解扫描 -->
+	<context:component-scan base-package="cn.ssm.crm1.web.controller"/>
+	
+	<!-- 1.注解驱动 -->
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">  
+            <bean  class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"  p:supportedMediaTypes="text/html" />  
+        </mvc:message-converters>  
+	</mvc:annotation-driven>
+	
+	<!-- 2.静态资源 -->
+	<mvc:resources location="/img/" mapping="/img/**"/>   
+	<mvc:resources location="/js/" mapping="/js/**"/>    
+	<mvc:resources location="/css/" mapping="/css/**"/>  
+	
+	<!-- 拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/*"/>
+			<mvc:exclude-mapping path="/loginUI"/>
+			<mvc:exclude-mapping path="/login"/>
+			<bean class="cn.ssm.crm1.web.interceptor.LoginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 3.视图解析 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 前缀 -->
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<!-- 后缀 -->
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- 4. -->
+	<import resource="classpath:spring.xml"/>
+	
+</beans>

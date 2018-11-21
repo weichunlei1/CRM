@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.ssm.crm1.mapper.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="cn.ssm.crm1.domain.Employee" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="realName" property="realname" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="tel" property="tel" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="inputTime" property="inputtime" jdbcType="DATE" />
+    <result column="state" property="state" jdbcType="BIT" />
+    <result column="admin" property="admin" jdbcType="BIT" />
+    <association property="dept" javaType="cn.ssm.crm1.domain.Department">
+    	<id column="dept_id" property="id" jdbcType="BIGINT"/>
+    	<result column="sn" property="sn" jdbcType="VARCHAR" />
+    	<result column="name" property="name" jdbcType="VARCHAR" />
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from employee
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteEmployeeAndRoleRelative" parameterType="java.lang.Long" >
+    delete from employee_role where e_id = #{eid}
+  </delete>
+  <insert id="insert" parameterType="cn.ssm.crm1.domain.Employee" useGeneratedKeys="true" keyProperty="id" >
+    insert into employee (username, realName, password, 
+      tel, email, inputTime, 
+      state, admin, dept_id)
+    values (#{username,jdbcType=VARCHAR}, #{realname,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{tel,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{inputtime,jdbcType=DATE}, 
+      #{state,jdbcType=BIT}, #{admin,jdbcType=BIT}, #{dept.id,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertEmployeeAndRoleRelative">
+   	insert into employee_role (e_id,r_id) values (#{eid},#{rid})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.ssm.crm1.domain.Employee" >
+    update employee
+    set username = #{username,jdbcType=VARCHAR},
+      realName = #{realname,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      tel = #{tel,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      inputTime = #{inputtime,jdbcType=DATE},
+      state = #{state,jdbcType=BIT},
+      admin = #{admin,jdbcType=BIT},
+      dept_id = #{dept.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateState" parameterType="int">
+  	update employee set state = 0 where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, username, realName, password, tel, email, inputTime, state, admin, dept_id
+    from employee
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, username, realName, password, tel, email, inputTime, state, admin, dept_id
+    from employee
+  </select>
+  <select id="loginByNameAndPwd" resultType="cn.ssm.crm1.domain.Employee">
+    select * from employee where username = #{username} and password = #{password}
+  </select>
+  <select id="queryPageByCount" resultType="long">
+    select count(*) from employee
+  </select>
+  <sql id="where_sql">
+  		<where>
+  			<if test="keyword!=null and keyword!=''">
+  				and e.username like '%${keyword}%'
+  			</if>
+  			<if test="beginTime!=null">
+  				and e.inputTime &gt; #{beginTime}
+  			</if>
+  			<if test="endTime!=null">
+  				and e.inputTime &lt;  #{endTime}
+  			</if>
+  			<if test="state!=null">
+  				and e.state = #{state}
+  			</if>
+  		</where>
+  </sql>
+  <select id="queryPageByRows" parameterType="cn.ssm.crm1.query.PageQueryByEmployee" resultMap="BaseResultMap">
+   		SELECT e.*,d.sn,d.name FROM employee e LEFT JOIN department d ON e.dept_id=d.id 
+   		<include refid="where_sql"/>
+   		ORDER BY state DESC,inputTime DESC
+   		<if test="page!=null">
+   			LIMIT #{start},#{rows}
+   		</if>
+  </select>
+  
+</mapper>

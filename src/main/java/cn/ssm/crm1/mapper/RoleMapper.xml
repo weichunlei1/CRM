@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.ssm.crm1.mapper.RoleMapper" >
+  <resultMap id="BaseResultMap" type="cn.ssm.crm1.domain.Role" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="sn" property="sn" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from role
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteRoleAndPermissionRelation" parameterType="java.lang.Long" >
+    delete from role_permission where r_id = #{rid}
+  </delete>
+  <insert id="insert" parameterType="cn.ssm.crm1.domain.Role" useGeneratedKeys="true" keyProperty="id" >
+    insert into role (sn, name)
+    values (#{sn,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertRoleAndPermissionRelation" >
+   insert into role_permission (r_id,p_id) values (#{rid},#{pid})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.ssm.crm1.domain.Role" >
+    update role
+    set sn = #{sn,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, sn, name
+    from role
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, sn, name
+    from role
+  </select>
+  <select id="queryPageByCount" resultType="long">
+    select count(*)
+    from role
+  </select>
+  <sql id="where_sql"></sql>
+  <select id="queryPageByRows" parameterType="cn.ssm.crm1.query.PageQueryByRole" resultMap="BaseResultMap" >
+    select id, sn, name
+    from role
+    <include refid="where_sql"/>
+    limit #{start},#{rows}
+  </select>
+  <select id="queryPermissionByRid" parameterType="long" resultType="cn.ssm.crm1.domain.Permission" >
+   SELECT p.id,p.name,p.resource FROM permission p 
+   WHERE id IN( SELECT p_id FROM role_permission WHERE r_id = #{rid});
+  </select>
+  <select id="queryRoleIdsForEmpId" resultType="long">
+    SELECT r.id FROM role r WHERE id IN (SELECT r_id FROM employee_role WHERE e_id = #{eid})
+  </select>
+</mapper>
